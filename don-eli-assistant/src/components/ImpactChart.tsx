@@ -182,7 +182,7 @@ const CustomTooltip: React.FC<TooltipProps> = ({ active, payload, label, unit = 
   );
 };
 
-const PremiumTooltip: React.FC<TooltipProps & { payload?: { value: number; name: string; color: string }[] }> = ({
+const PremiumTooltip: React.FC<Omit<TooltipProps, 'payload'> & { payload?: { value: number; name: string; color?: string }[] }> = ({
   active, payload, label,
 }) => {
   if (!active || !payload?.length) return null;
@@ -265,7 +265,7 @@ const ImpactChart: React.FC<ImpactChartProps> = ({ data }) => {
                 tickLine={false}
               />
               <Tooltip content={<CustomTooltip unit="%" />} cursor={{ fill: 'rgba(197,157,95,.08)' }} />
-              <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={22} label={{ position: 'right', formatter: (v: number) => `+${v}%`, fontSize: 11, fill: '#4B2C20', fontWeight: 600 }}>
+              <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={22} label={{ position: 'right', formatter: (v: unknown) => `+${v}%`, fontSize: 11, fill: '#4B2C20', fontWeight: 600 }}>
                 {data.costsImpact.map((entry, i) => (
                   <Cell key={i} fill={entry.color} />
                 ))}
