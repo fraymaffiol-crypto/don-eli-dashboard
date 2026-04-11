@@ -3,10 +3,6 @@
 import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
-  AreaChart, Area, CartesianGrid,
-} from 'recharts';
 
 // ══════════════════════════════════════════════════════════════
 // TIPOS
@@ -199,37 +195,8 @@ const CHART_CSS = `
 `;
 
 // ══════════════════════════════════════════════════════════════
-// IMPACT CHART (inline, sin import externo)
+// IMPACT CHART (pure divs, sin dependencias externas)
 // ══════════════════════════════════════════════════════════════
-
-interface TooltipPayload { value: number; name: string; color?: string }
-interface ChartTooltipProps { active?: boolean; payload?: TooltipPayload[]; label?: string; unit?: string }
-
-const CustomTooltip = ({ active, payload, label, unit = '%' }: ChartTooltipProps) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="ic-tooltip">
-      <p className="ic-tooltip-label">{label}</p>
-      {payload.map((p, i) => (
-        <p key={i} className="ic-tooltip-val">+{p.value}<span className="ic-tooltip-unit"> {unit}</span></p>
-      ))}
-    </div>
-  );
-};
-
-const PremiumTooltip = ({ active, payload, label }: ChartTooltipProps) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="ic-tooltip">
-      <p className="ic-tooltip-label">{label}</p>
-      {payload.map((p, i) => (
-        <p key={i} className="ic-tooltip-val" style={{ color: p.color ?? '#F5E6D3' }}>
-          {p.value}<span className="ic-tooltip-unit"> ¢/lb</span>
-        </p>
-      ))}
-    </div>
-  );
-};
 
 const CHART_TABS = [
   { id: 'costos',   label: '📈 Impacto en Costos' },
@@ -240,6 +207,9 @@ type TabId = typeof CHART_TABS[number]['id'];
 
 function ImpactChart({ data }: { data: ChartData }) {
   const [tab, setTab] = useState<TabId>('costos');
+  const maxCost = Math.max(...data.costsImpact.map((d) => d.value));
+  const maxPrice = 450;
+
   return (
     <div className="ic-wrap">
       <style dangerouslySetInnerHTML={{ __html: CHART_CSS }} />
@@ -253,23 +223,34 @@ function ImpactChart({ data }: { data: ChartData }) {
         ))}
       </div>
 
+      {/* ── Impacto en Costos ── */}
       {tab === 'costos' && (
         <div className="ic-panel">
           <p className="ic-panel-title">Variación porcentual de costos · 2024–2026</p>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={data.costsImpact} layout="vertical" margin={{ top: 0, right: 40, left: 10, bottom: 0 }}>
-              <XAxis type="number" tick={{ fontSize: 10, fill: 'rgba(75,44,32,.5)' }} tickFormatter={(v) => `+${v}%`} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="label" tick={{ fontSize: 11, fill: '#4B2C20', fontWeight: 500 }} width={130} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip unit="%" />} cursor={{ fill: 'rgba(197,157,95,.08)' }} />
-              <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={22} label={{ position: 'right', formatter: (v: unknown) => `+${v}%`, fontSize: 11, fill: '#4B2C20', fontWeight: 600 }}>
-                {data.costsImpact.map((e, i) => <Cell key={i} fill={e.color} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            {data.costsImpact.map((entry, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ width: '130px', fontSize: '0.72rem', fontWeight: 500, color: '#4B2C20', flexShrink: 0, textAlign: 'right', lineHeight: 1.3 }}>
+                  {entry.label}
+                </span>
+                <div style={{ flex: 1, background: 'rgba(197,157,95,0.12)', borderRadius: '0 6px 6px 0', height: '22px', overflow: 'hidden' }}>
+                  <div style={{
+                    width: `${(entry.value / maxCost) * 100}%`,
+                    background: entry.color,
+                    height: '100%',
+                    borderRadius: '0 6px 6px 0',
+                    transition: 'width 0.4s ease',
+                  }} />
+                </div>
+                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#4B2C20', width: '42px', flexShrink: 0 }}>+{entry.value}%</span>
+              </div>
+            ))}
+          </div>
           <p className="ic-note">Fuentes: Freightos Baltic Index, SIPSA, EIA, FNC · Q4 2023 – Q1 2026</p>
         </div>
       )}
 
+      {/* ── Indicadores Clave ── */}
       {tab === 'metricas' && (
         <div className="ic-panel">
           <p className="ic-panel-title">Indicadores operacionales críticos</p>
@@ -286,29 +267,22 @@ function ImpactChart({ data }: { data: ChartData }) {
         </div>
       )}
 
+      {/* ── Arábica vs Robusta ── */}
       {tab === 'prima' && (
         <div className="ic-panel">
           <p className="ic-panel-title">Precio ¢/lb · Arábica colombiano vs Robusta asiático</p>
-          <ResponsiveContainer width="100%" height={240}>
-            <AreaChart data={data.arabicaVsRobusta} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-              <defs>
-                <linearGradient id="gradArabica" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#C59D5F" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#C59D5F" stopOpacity={0.04} />
-                </linearGradient>
-                <linearGradient id="gradRobusta" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#4B2C20" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#4B2C20" stopOpacity={0.03} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(197,157,95,.15)" />
-              <XAxis dataKey="mes" tick={{ fontSize: 10, fill: 'rgba(75,44,32,.5)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: 'rgba(75,44,32,.5)' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}¢`} domain={['auto', 'auto']} />
-              <Tooltip content={<PremiumTooltip />} />
-              <Area type="monotone" dataKey="arabica" name="Arábica Colombiano" stroke="#C59D5F" strokeWidth={2.5} fill="url(#gradArabica)" dot={false} />
-              <Area type="monotone" dataKey="robusta" name="Robusta Asiático"   stroke="#4B2C20" strokeWidth={2}   fill="url(#gradRobusta)" dot={false} strokeDasharray="5 3" />
-            </AreaChart>
-          </ResponsiveContainer>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', marginTop: '0.5rem' }}>
+            {data.arabicaVsRobusta.map((row, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span style={{ width: '44px', fontSize: '0.6rem', color: 'rgba(75,44,32,0.5)', flexShrink: 0 }}>{row.mes}</span>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <div style={{ width: `${(row.arabica / maxPrice) * 100}%`, height: '9px', background: '#C59D5F', borderRadius: '0 4px 4px 0' }} />
+                  <div style={{ width: `${(row.robusta / maxPrice) * 100}%`, height: '9px', background: '#4B2C20', borderRadius: '0 4px 4px 0', opacity: 0.75 }} />
+                </div>
+                <span style={{ fontSize: '0.6rem', color: 'rgba(75,44,32,0.55)', width: '34px', textAlign: 'right', flexShrink: 0 }}>{row.arabica}¢</span>
+              </div>
+            ))}
+          </div>
           <div className="ic-legend">
             <div className="ic-legend-item"><div className="ic-legend-dot" style={{ background: '#C59D5F' }} />Arábica Colombiano</div>
             <div className="ic-legend-item"><div className="ic-legend-dot" style={{ background: '#4B2C20' }} />Robusta Asiático</div>
