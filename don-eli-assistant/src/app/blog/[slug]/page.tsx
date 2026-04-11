@@ -1,7 +1,12 @@
-import type { Metadata } from 'next';
+'use client';
+
+import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import ImpactChart from '../../components/ImpactChart';
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+  AreaChart, Area, CartesianGrid,
+} from 'recharts';
 
 // ══════════════════════════════════════════════════════════════
 // TIPOS
@@ -14,8 +19,8 @@ type ContentBlock =
   | { type: 'list'; items: string[] }
   | { type: 'chart' };
 
-interface CostItem   { label: string; value: number; unit: string; color: string }
-interface KeyMetric  { label: string; value: string; unit: string; icon: string }
+interface CostItem    { label: string; value: number; unit: string; color: string }
+interface KeyMetric   { label: string; value: string; unit: string; icon: string }
 interface ArabicaPoint { mes: string; arabica: number; robusta: number }
 
 interface ChartData {
@@ -44,7 +49,7 @@ const POSTS: Post[] = [
   {
     slug: 'tormenta-en-el-estrecho',
     title: 'Tormenta en el Estrecho: El Efecto Dominó del Conflicto en el Medio Oriente sobre el Café Colombiano',
-    excerpt: 'Los ataques hutíes en el Mar Rojo y las tensiones en el Golfo Pérsico han disparado los fletes marítimos un 140%, encarecido los fertilizantes un 22% y añadido 12 días a la ruta del café colombiano hacia Europa. Un análisis del impacto real en los bolsillos de 540.000 caficultores.',
+    excerpt: 'Los ataques hutíes en el Mar Rojo y las tensiones en el Golfo Pérsico han disparado los fletes marítimos un 140%, encarecido los fertilizantes un 22% y añadido 12 días a la ruta del café colombiano hacia Europa.',
     date: '2026-04-09',
     author: 'Redacción Económica',
     tags: ['mercado', 'logística', 'Colombia', 'geopolítica'],
@@ -63,10 +68,10 @@ const POSTS: Post[] = [
       { type: 'paragraph', text: 'Colombia importa cerca del 70% de los fertilizantes que consumen sus caficultores. La urea —el insumo nitrogenado fundamental para el cultivo del café— proviene en buena medida de Rusia, Medio Oriente y el sudeste asiático. Las rutas marítimas comprometidas y las sanciones cruzadas derivadas del conflicto regional encarecieron la urea un 22% entre enero de 2025 y marzo de 2026, según datos del Sistema de Información de Precios del Sector Agropecuario (SIPSA).' },
       { type: 'paragraph', text: 'Para un caficultor de Santander que maneja 3 hectáreas y aplica en promedio 250 kilogramos de fertilizante por hectárea al año, el incremento representa un sobrecosto de entre 180.000 y 240.000 pesos por ciclo productivo —una suma que puede equivaler al ingreso neto de una semana de trabajo. En un sector donde el 78% de los productores son pequeños caficultores con menos de 5 hectáreas, este tipo de choques de costos no son estadística: son facturas sin pagar.' },
       { type: 'heading', level: 2, text: 'Petróleo a 120 Dólares: El Costo Invisible del Transporte Interno' },
-      { type: 'paragraph', text: 'El Brent cruzó los 120 USD por barril en varias ocasiones durante 2025, presionado por la incertidumbre geopolítica, los recortes de la OPEP+ y la especulación de mercado. En Colombia, el precio del ACPM —el combustible de los camiones que llevan el café desde las veredas cafeteras hasta los centros de beneficio y los puertos de exportación— siguió al alza con rezago, pero con fuerza. El costo del transporte terrestre de carga subió un 18% promedio entre Huila-Bogotá y Antioquia-Buenaventura, erosionando el margen bruto de los exportadores y trasladando presión hacia abajo en la cadena, sobre los intermediarios y eventualmente sobre el precio pagado en finca.' },
+      { type: 'paragraph', text: 'El Brent cruzó los 120 USD por barril en varias ocasiones durante 2025, presionado por la incertidumbre geopolítica, los recortes de la OPEP+ y la especulación de mercado. En Colombia, el precio del ACPM —el combustible de los camiones que llevan el café desde las veredas cafeteras hasta los centros de beneficio y los puertos de exportación— siguió al alza con rezago, pero con fuerza. El costo del transporte terrestre de carga subió un 18% promedio entre Huila-Bogotá y Antioquia-Buenaventura, erosionando el margen bruto de los exportadores.' },
       { type: 'heading', level: 2, text: 'La Prima del Arábica Colombiano: Una Ventaja que Resiste' },
       { type: 'paragraph', text: 'No todo es sombrío. Mientras el conflicto encadena los costos logísticos, el arábica lavado colombiano —el perfil de taza que distingue al café de Santander, Huila, Nariño y Antioquia— ha visto crecer su prima diferencial sobre el robusta asiático. El robusta de Vietnam e Indonesia, que domina el mercado del café soluble y las mezclas de precio bajo, también enfrenta sus propias disrupciones logísticas en el Mar del Sur de China y el Índico.' },
-      { type: 'paragraph', text: 'El resultado es una divergencia de precios: mientras el robusta se mueve entre 190 y 215 centavos de dólar por libra, el arábica colombiano de especialidad cotiza por encima de los 400 centavos en algunos contratos diferenciados —una prima de casi el 100% que refleja la preferencia de los tostadores europeos por orígenes confiables, trazables y con perfiles organolépticos definidos. Para los productores santandereanos que trabajan bajo certificaciones de origen, este diferencial es un colchón que amortigua, aunque no anula, el impacto de los costos logísticos.' },
+      { type: 'paragraph', text: 'El resultado es una divergencia de precios: mientras el robusta se mueve entre 190 y 215 centavos de dólar por libra, el arábica colombiano de especialidad cotiza por encima de los 400 centavos en algunos contratos diferenciados —una prima de casi el 100% que refleja la preferencia de los tostadores europeos por orígenes confiables, trazables y con perfiles organolépticos definidos.' },
       { type: 'heading', level: 2, text: 'El Caficultor en el Ojo del Huracán' },
       { type: 'paragraph', text: 'En las veredas del Cañón del Chicamocha, del Páramo de Berlín o de la Mesa de los Santos, la geopolítica llega en forma de precio de compra por carga. El caficultor no negocia el flete, no contrata el seguro marítimo y no paga la factura de la urea en dólares —pero los absorbe todos, traducidos en un precio en finca que no siempre cubre los costos de producción.' },
       { type: 'paragraph', text: 'La Federación Nacional de Cafeteros activó a principios de 2026 un programa de subsidio parcial a fertilizantes para mitigar el choque de precios, y las cooperativas cafeteras de la región negociaron volúmenes de compra anticipada con proveedores brasileños —una alternativa parcial que reduce la dependencia de rutas asiáticas, aunque a un costo todavía superior al promedio histórico.' },
@@ -77,23 +82,23 @@ const POSTS: Post[] = [
         'Las cooperativas del nororiente colombiano acumulan inventarios que superan en 18% el promedio histórico de la época, dificultando la gestión del capital de trabajo.',
       ]},
       { type: 'heading', level: 2, text: 'Perspectivas: Adaptar o Esperar' },
-      { type: 'paragraph', text: 'El conflicto en el Medio Oriente no tiene fecha de cierre visible. Los analistas de mercados de materias primas de Goldman Sachs y Citigroup estiman que las disrupciones logísticas en el Mar Rojo podrían extenderse al menos hasta 2027, con episodios de escalamiento que mantendrán la volatilidad en los fletes. Para el sector cafetero colombiano, la adaptación pasa por tres frentes: diversificación de rutas de exportación hacia puertos del Pacífico con acceso directo a mercados asiáticos en crecimiento; industrialización local para exportar café procesado y no solo verde; y desarrollo de proveedores domésticos o latinoamericanos de insumos agrícolas que reduzcan la dependencia de rutas comprometidas.' },
+      { type: 'paragraph', text: 'El conflicto en el Medio Oriente no tiene fecha de cierre visible. Los analistas de mercados de materias primas de Goldman Sachs y Citigroup estiman que las disrupciones logísticas en el Mar Rojo podrían extenderse al menos hasta 2027, con episodios de escalamiento que mantendrán la volatilidad en los fletes. Para el sector cafetero colombiano, la adaptación pasa por tres frentes: diversificación de rutas de exportación hacia puertos del Pacífico con acceso directo a mercados asiáticos en crecimiento; industrialización local para exportar café procesado y no solo verde; y desarrollo de proveedores domésticos o latinoamericanos de insumos agrícolas.' },
       { type: 'paragraph', text: 'En el corto plazo, sin embargo, el margen de maniobra del pequeño caficultor es limitado. La apuesta sigue siendo la calidad: en un mercado global convulsionado, el café de origen colombiano con trazabilidad, perfil sensorial documentado y relaciones directas con tostadores especializados es el único activo que no depende de si hay paz o guerra en el estrecho de Bab-el-Mandeb.' },
       { type: 'quote', text: 'Cuando el mundo se complica, el café de calidad se convierte en refugio. Los compradores europeos pagan la prima porque saben exactamente qué están comprando. Esa certeza vale más que un flete barato.', source: 'Director comercial, exportadora del nororiente colombiano' },
     ],
     chartData: {
       costsImpact: [
-        { label: 'Fletes Marítimos',    value: 140, unit: '%', color: '#9B2226' },
-        { label: 'Prima Arábica Col.',  value: 85,  unit: '%', color: '#C59D5F' },
-        { label: 'Petróleo Brent',      value: 68,  unit: '%', color: '#AE5F00' },
-        { label: 'Transporte Terrestre',value: 18,  unit: '%', color: '#6B3E26' },
-        { label: 'Fertilizantes',       value: 22,  unit: '%', color: '#4B2C20' },
+        { label: 'Fletes Marítimos',     value: 140, unit: '%', color: '#9B2226' },
+        { label: 'Prima Arábica Col.',   value: 85,  unit: '%', color: '#C59D5F' },
+        { label: 'Petróleo Brent',       value: 68,  unit: '%', color: '#AE5F00' },
+        { label: 'Transporte Terrestre', value: 18,  unit: '%', color: '#6B3E26' },
+        { label: 'Fertilizantes',        value: 22,  unit: '%', color: '#4B2C20' },
       ],
       keyMetrics: [
-        { label: 'Días Extra Navegación', value: '+12',   unit: 'días',        icon: '🚢' },
-        { label: 'Petróleo Brent',        value: '>120',  unit: 'USD/barril',  icon: '🛢️' },
-        { label: 'Km Ruta Extra',         value: '+8.500',unit: 'km',          icon: '🗺️' },
-        { label: 'Seguro Marítimo',       value: '×3',    unit: 'multiplicado',icon: '📋' },
+        { label: 'Días Extra Navegación', value: '+12',    unit: 'días',         icon: '🚢' },
+        { label: 'Petróleo Brent',        value: '>120',   unit: 'USD/barril',   icon: '🛢️' },
+        { label: 'Km Ruta Extra',         value: '+8.500', unit: 'km',           icon: '🗺️' },
+        { label: 'Seguro Marítimo',       value: '×3',     unit: 'multiplicado', icon: '📋' },
       ],
       arabicaVsRobusta: [
         { mes: 'Ene 25', arabica: 285, robusta: 190 },
@@ -125,74 +130,18 @@ function fmtDate(dateStr: string): string {
 }
 
 // ══════════════════════════════════════════════════════════════
-// STATIC PARAMS
+// ESTILOS PÁGINA
 // ══════════════════════════════════════════════════════════════
 
-export function generateStaticParams() {
-  return POSTS.map((p) => ({ slug: p.slug }));
-}
-
-// ══════════════════════════════════════════════════════════════
-// METADATA DINÁMICA
-// ══════════════════════════════════════════════════════════════
-
-export async function generateMetadata(
-  { params }: { params: Promise<{ slug: string }> }
-): Promise<Metadata> {
-  const { slug } = await params;
-  const post = getPostBySlug(slug);
-  if (!post) return { title: 'Artículo no encontrado · Don Elí' };
-
-  return {
-    title: `${post.title} · Don Elí Blog`,
-    description: post.excerpt,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      type: 'article',
-      publishedTime: post.date,
-      authors: [post.author],
-      tags: post.tags,
-    },
-  };
-}
-
-// ══════════════════════════════════════════════════════════════
-// ESTILOS
-// ══════════════════════════════════════════════════════════════
-
-const ESTILOS = `
-  .ap-wrap {
-    --bg:   #F5E6D3;
-    --cafe: #4B2C20;
-    --oro:  #C59D5F;
-    --bl:   #FFFFFF;
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    background-color: var(--bg);
-    background-image:
-      radial-gradient(ellipse at 15% 10%, rgba(197,157,95,.13) 0%, transparent 55%),
-      radial-gradient(ellipse at 85% 85%, rgba(75,44,32,.07) 0%, transparent 55%);
-    color: var(--cafe);
-  }
-  .ap-header {
-    background: var(--cafe);
-    padding: 1.6rem 1.2rem 2.2rem;
-    position: relative;
-    overflow: hidden;
-  }
-  .ap-header::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 50% 0%, rgba(197,157,95,.18) 0%, transparent 65%);
-    pointer-events: none;
-  }
+const PAGE_CSS = `
+  .ap-wrap { --bg:#F5E6D3; --cafe:#4B2C20; --oro:#C59D5F; --bl:#FFFFFF; font-family:'DM Sans',sans-serif; min-height:100vh; background-color:var(--bg); background-image:radial-gradient(ellipse at 15% 10%,rgba(197,157,95,.13) 0%,transparent 55%),radial-gradient(ellipse at 85% 85%,rgba(75,44,32,.07) 0%,transparent 55%); color:var(--cafe); }
+  .ap-header { background:var(--cafe); padding:1.6rem 1.2rem 2.2rem; position:relative; overflow:hidden; }
+  .ap-header::after { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%,rgba(197,157,95,.18) 0%,transparent 65%); pointer-events:none; }
   .ap-nav { display:flex; align-items:center; gap:.5rem; margin-bottom:1.2rem; position:relative; z-index:1; }
   .ap-nav a { font-size:.65rem; font-weight:600; letter-spacing:.06em; color:rgba(197,157,95,.7); text-decoration:none; }
   .ap-nav a:hover { color:var(--oro); }
   .ap-nav-sep { font-size:.6rem; color:rgba(197,157,95,.35); }
-  .ap-nav-current { font-size:.65rem; color:rgba(245,230,211,.35); }
+  .ap-nav-cur { font-size:.65rem; color:rgba(245,230,211,.35); }
   .ap-tags { display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:.85rem; position:relative; z-index:1; }
   .ap-tag { font-size:.57rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--oro); background:rgba(197,157,95,.15); border:1px solid rgba(197,157,95,.3); border-radius:50px; padding:.2rem .65rem; }
   .ap-title { font-family:'Playfair Display',serif; font-size:clamp(1.5rem,6vw,2.3rem); font-weight:700; color:var(--bg); line-height:1.2; margin-bottom:.9rem; position:relative; z-index:1; }
@@ -207,7 +156,7 @@ const ESTILOS = `
   .ap-quote { background:var(--cafe); border-radius:12px; padding:1.2rem 1.3rem; position:relative; overflow:hidden; }
   .ap-quote::before { content:'"'; position:absolute; top:-.4rem; left:.6rem; font-family:'Playfair Display',serif; font-size:5rem; color:rgba(197,157,95,.18); line-height:1; pointer-events:none; }
   .ap-quote-text { font-family:'Playfair Display',serif; font-size:.9rem; font-style:italic; color:var(--bg); line-height:1.7; position:relative; z-index:1; }
-  .ap-quote-source { font-size:.62rem; color:var(--oro); font-weight:500; margin-top:.6rem; font-style:normal; display:block; position:relative; z-index:1; }
+  .ap-quote-src { font-size:.62rem; color:var(--oro); font-weight:500; margin-top:.6rem; font-style:normal; display:block; position:relative; z-index:1; }
   .ap-list { background:var(--bl); border-radius:12px; padding:1rem 1.2rem; border:1px solid rgba(197,157,95,.18); box-shadow:0 2px 12px rgba(75,44,32,.07); }
   .ap-list ul { list-style:none; display:flex; flex-direction:column; gap:.65rem; padding:0; margin:0; }
   .ap-list ul li { font-size:.82rem; line-height:1.6; color:rgba(75,44,32,.8); padding-left:1.1rem; position:relative; }
@@ -218,6 +167,158 @@ const ESTILOS = `
   .ap-footer-back:hover { background:rgba(197,157,95,.1); }
   .ap-footer-note { font-size:.62rem; color:rgba(75,44,32,.35); font-style:italic; }
 `;
+
+// ══════════════════════════════════════════════════════════════
+// ESTILOS CHART (inline)
+// ══════════════════════════════════════════════════════════════
+
+const CHART_CSS = `
+  .ic-wrap { --bg:#F5E6D3; --cafe:#4B2C20; --oro:#C59D5F; --bl:#FFFFFF; --rojo:#9B2226; font-family:'DM Sans',sans-serif; display:flex; flex-direction:column; gap:1.2rem; }
+  .ic-header { border-left:4px solid var(--oro); padding:.5rem 0 .5rem .9rem; }
+  .ic-eyebrow { font-size:.58rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:var(--oro); margin-bottom:.2rem; }
+  .ic-title { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:700; color:var(--cafe); line-height:1.25; }
+  .ic-tabs { display:flex; gap:.4rem; flex-wrap:wrap; }
+  .ic-tab { padding:.32rem .9rem; border-radius:50px; border:1.5px solid rgba(197,157,95,.35); background:var(--bg); font-size:.7rem; font-weight:600; color:var(--cafe); cursor:pointer; transition:all .2s; font-family:inherit; }
+  .ic-tab:hover,.ic-tab.on { background:var(--cafe); border-color:var(--cafe); color:var(--oro); }
+  .ic-panel { background:var(--bl); border-radius:16px; border:1px solid rgba(197,157,95,.18); box-shadow:0 4px 24px rgba(75,44,32,.1); padding:1.2rem 1rem; }
+  .ic-panel-title { font-size:.68rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--oro); margin-bottom:1rem; }
+  .ic-metrics { display:grid; grid-template-columns:1fr 1fr; gap:.65rem; margin-top:.2rem; }
+  .ic-metric { background:var(--bg); border-radius:12px; padding:.85rem .75rem; border:1px solid rgba(197,157,95,.2); display:flex; flex-direction:column; gap:.2rem; }
+  .ic-metric-ico { font-size:1.4rem; line-height:1; margin-bottom:.15rem; }
+  .ic-metric-val { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:700; color:var(--rojo); line-height:1; }
+  .ic-metric-unit { font-size:.6rem; font-weight:400; color:var(--oro); }
+  .ic-metric-lbl { font-size:.65rem; font-weight:500; color:rgba(75,44,32,.65); margin-top:.15rem; line-height:1.3; }
+  .ic-tooltip { background:var(--cafe); border:none; border-radius:10px; padding:.5rem .85rem; }
+  .ic-tooltip-label { font-size:.65rem; font-weight:600; color:var(--oro); margin-bottom:.15rem; letter-spacing:.08em; }
+  .ic-tooltip-val { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--bg); }
+  .ic-tooltip-unit { font-size:.6rem; color:rgba(245,230,211,.6); }
+  .ic-legend { display:flex; gap:1.2rem; justify-content:center; margin-top:.6rem; flex-wrap:wrap; }
+  .ic-legend-item { display:flex; align-items:center; gap:.35rem; font-size:.65rem; font-weight:500; color:rgba(75,44,32,.7); }
+  .ic-legend-dot { width:10px; height:10px; border-radius:2px; flex-shrink:0; }
+  .ic-note { font-size:.65rem; color:rgba(75,44,32,.4); font-style:italic; margin-top:.8rem; text-align:center; }
+`;
+
+// ══════════════════════════════════════════════════════════════
+// IMPACT CHART (inline, sin import externo)
+// ══════════════════════════════════════════════════════════════
+
+interface TooltipPayload { value: number; name: string; color?: string }
+interface ChartTooltipProps { active?: boolean; payload?: TooltipPayload[]; label?: string; unit?: string }
+
+const CustomTooltip = ({ active, payload, label, unit = '%' }: ChartTooltipProps) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="ic-tooltip">
+      <p className="ic-tooltip-label">{label}</p>
+      {payload.map((p, i) => (
+        <p key={i} className="ic-tooltip-val">+{p.value}<span className="ic-tooltip-unit"> {unit}</span></p>
+      ))}
+    </div>
+  );
+};
+
+const PremiumTooltip = ({ active, payload, label }: ChartTooltipProps) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="ic-tooltip">
+      <p className="ic-tooltip-label">{label}</p>
+      {payload.map((p, i) => (
+        <p key={i} className="ic-tooltip-val" style={{ color: p.color ?? '#F5E6D3' }}>
+          {p.value}<span className="ic-tooltip-unit"> ¢/lb</span>
+        </p>
+      ))}
+    </div>
+  );
+};
+
+const CHART_TABS = [
+  { id: 'costos',   label: '📈 Impacto en Costos' },
+  { id: 'metricas', label: '📊 Indicadores Clave' },
+  { id: 'prima',    label: '☕ Arábica vs Robusta' },
+] as const;
+type TabId = typeof CHART_TABS[number]['id'];
+
+function ImpactChart({ data }: { data: ChartData }) {
+  const [tab, setTab] = useState<TabId>('costos');
+  return (
+    <div className="ic-wrap">
+      <style dangerouslySetInnerHTML={{ __html: CHART_CSS }} />
+      <div className="ic-header">
+        <p className="ic-eyebrow">Análisis de Impacto</p>
+        <p className="ic-title">Indicadores del Conflicto sobre el Café Colombiano</p>
+      </div>
+      <div className="ic-tabs">
+        {CHART_TABS.map((t) => (
+          <button key={t.id} className={`ic-tab${tab === t.id ? ' on' : ''}`} onClick={() => setTab(t.id)}>{t.label}</button>
+        ))}
+      </div>
+
+      {tab === 'costos' && (
+        <div className="ic-panel">
+          <p className="ic-panel-title">Variación porcentual de costos · 2024–2026</p>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={data.costsImpact} layout="vertical" margin={{ top: 0, right: 40, left: 10, bottom: 0 }}>
+              <XAxis type="number" tick={{ fontSize: 10, fill: 'rgba(75,44,32,.5)' }} tickFormatter={(v) => `+${v}%`} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="label" tick={{ fontSize: 11, fill: '#4B2C20', fontWeight: 500 }} width={130} axisLine={false} tickLine={false} />
+              <Tooltip content={<CustomTooltip unit="%" />} cursor={{ fill: 'rgba(197,157,95,.08)' }} />
+              <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={22} label={{ position: 'right', formatter: (v: unknown) => `+${v}%`, fontSize: 11, fill: '#4B2C20', fontWeight: 600 }}>
+                {data.costsImpact.map((e, i) => <Cell key={i} fill={e.color} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+          <p className="ic-note">Fuentes: Freightos Baltic Index, SIPSA, EIA, FNC · Q4 2023 – Q1 2026</p>
+        </div>
+      )}
+
+      {tab === 'metricas' && (
+        <div className="ic-panel">
+          <p className="ic-panel-title">Indicadores operacionales críticos</p>
+          <div className="ic-metrics">
+            {data.keyMetrics.map((m, i) => (
+              <div key={i} className="ic-metric">
+                <span className="ic-metric-ico">{m.icon}</span>
+                <span className="ic-metric-val">{m.value}<span className="ic-metric-unit"> {m.unit}</span></span>
+                <span className="ic-metric-lbl">{m.label}</span>
+              </div>
+            ))}
+          </div>
+          <p className="ic-note">Ruta Buenaventura–Bremen vía Cabo de Buena Esperanza vs ruta histórica por Canal de Suez</p>
+        </div>
+      )}
+
+      {tab === 'prima' && (
+        <div className="ic-panel">
+          <p className="ic-panel-title">Precio ¢/lb · Arábica colombiano vs Robusta asiático</p>
+          <ResponsiveContainer width="100%" height={240}>
+            <AreaChart data={data.arabicaVsRobusta} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="gradArabica" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#C59D5F" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#C59D5F" stopOpacity={0.04} />
+                </linearGradient>
+                <linearGradient id="gradRobusta" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#4B2C20" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#4B2C20" stopOpacity={0.03} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(197,157,95,.15)" />
+              <XAxis dataKey="mes" tick={{ fontSize: 10, fill: 'rgba(75,44,32,.5)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: 'rgba(75,44,32,.5)' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}¢`} domain={['auto', 'auto']} />
+              <Tooltip content={<PremiumTooltip />} />
+              <Area type="monotone" dataKey="arabica" name="Arábica Colombiano" stroke="#C59D5F" strokeWidth={2.5} fill="url(#gradArabica)" dot={false} />
+              <Area type="monotone" dataKey="robusta" name="Robusta Asiático"   stroke="#4B2C20" strokeWidth={2}   fill="url(#gradRobusta)" dot={false} strokeDasharray="5 3" />
+            </AreaChart>
+          </ResponsiveContainer>
+          <div className="ic-legend">
+            <div className="ic-legend-item"><div className="ic-legend-dot" style={{ background: '#C59D5F' }} />Arábica Colombiano</div>
+            <div className="ic-legend-item"><div className="ic-legend-dot" style={{ background: '#4B2C20' }} />Robusta Asiático</div>
+          </div>
+          <p className="ic-note">Precios referenciales ¢/lb · ICE Futures & FNC · Ene 2025 – Abr 2026</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ══════════════════════════════════════════════════════════════
 // RENDER DE BLOQUES
@@ -235,7 +336,7 @@ function RenderBlock({ block, chartData }: { block: ContentBlock; chartData?: Ch
       return (
         <blockquote className="ap-quote">
           <p className="ap-quote-text">{block.text}</p>
-          {block.source && <cite className="ap-quote-source">— {block.source}</cite>}
+          {block.source && <cite className="ap-quote-src">— {block.source}</cite>}
         </blockquote>
       );
     case 'list':
@@ -246,11 +347,7 @@ function RenderBlock({ block, chartData }: { block: ContentBlock; chartData?: Ch
       );
     case 'chart':
       if (!chartData) return null;
-      return (
-        <div className="ap-chart-wrap">
-          <ImpactChart data={chartData} />
-        </div>
-      );
+      return <div className="ap-chart-wrap"><ImpactChart data={chartData} /></div>;
   }
 }
 
@@ -258,16 +355,19 @@ function RenderBlock({ block, chartData }: { block: ContentBlock; chartData?: Ch
 // PÁGINA
 // ══════════════════════════════════════════════════════════════
 
-export default async function ArticlePage(
-  { params }: { params: Promise<{ slug: string }> }
-) {
-  const { slug } = await params;
+export default function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
   const post = getPostBySlug(slug);
-  if (!post) notFound();
+
+  useEffect(() => {
+    if (post) document.title = `${post.title} · Don Elí Blog`;
+  }, [post]);
+
+  if (!post) { notFound(); }
 
   return (
     <div className="ap-wrap">
-      <style dangerouslySetInnerHTML={{ __html: ESTILOS }} />
+      <style dangerouslySetInnerHTML={{ __html: PAGE_CSS }} />
 
       <header className="ap-header">
         <nav className="ap-nav">
@@ -275,7 +375,7 @@ export default async function ArticlePage(
           <span className="ap-nav-sep">›</span>
           <Link href="/blog">Blog</Link>
           <span className="ap-nav-sep">›</span>
-          <span className="ap-nav-current">{post.slug}</span>
+          <span className="ap-nav-cur">{post.slug}</span>
         </nav>
         <div className="ap-tags">
           {post.tags.map((tag) => <span key={tag} className="ap-tag">{tag}</span>)}
@@ -296,9 +396,7 @@ export default async function ArticlePage(
         ))}
         <div className="ap-footer">
           <Link href="/blog" className="ap-footer-back">← Volver al blog</Link>
-          <span className="ap-footer-note">
-            © {new Date(post.date).getFullYear()} Don Elí Brew Assistant
-          </span>
+          <span className="ap-footer-note">© {new Date(post.date).getFullYear()} Don Elí Brew Assistant</span>
         </div>
       </main>
     </div>
