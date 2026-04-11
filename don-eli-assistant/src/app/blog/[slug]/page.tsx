@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getAllSlugs, getPostBySlug } from '@/lib/posts';
-import type { ContentBlock } from '@/lib/posts';
-import ImpactChart from '@/components/ImpactChart';
+import { getAllSlugs, getPostBySlug } from '../../lib/posts';
+import type { ContentBlock } from '../../lib/posts';
+import ImpactChart from '../../components/ImpactChart';
 
 // ══════════════════════════════════════════════════════════════
 // STATIC PARAMS
@@ -288,7 +288,7 @@ const ESTILOS = `
 // RENDER DE BLOQUES
 // ══════════════════════════════════════════════════════════════
 
-function RenderBlock({ block, chartData }: { block: ContentBlock; chartData?: import('@/lib/posts').ChartData }) {
+function RenderBlock({ block, chartData }: { block: ContentBlock; chartData?: import('../../lib/posts').ChartData }) {
   switch (block.type) {
     case 'paragraph':
       return <p className="ap-p">{block.text}</p>;
