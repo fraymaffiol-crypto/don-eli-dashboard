@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getAllPosts } from '@/lib/posts';
 
 export const metadata: Metadata = {
   title: 'Blog · Don Elí Brew Assistant',
@@ -182,6 +181,32 @@ const ESTILOS = `
   }
 `;
 
+// ══════════════════════════════════════════════════════════════
+// POSTS INLINE
+// ══════════════════════════════════════════════════════════════
+
+interface PostSummary {
+  slug: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  author: string;
+  tags: string[];
+  readTime: number;
+}
+
+const POSTS: PostSummary[] = [
+  {
+    slug: 'tormenta-en-el-estrecho',
+    title: 'Tormenta en el Estrecho: El Efecto Dominó del Conflicto en el Medio Oriente sobre el Café Colombiano',
+    excerpt: 'Los ataques hutíes en el Mar Rojo y las tensiones en el Golfo Pérsico han disparado los fletes marítimos un 140%, encarecido los fertilizantes un 22% y añadido 12 días a la ruta del café colombiano hacia Europa.',
+    date: '2026-04-09',
+    author: 'Redacción Económica',
+    tags: ['mercado', 'logística', 'Colombia', 'geopolítica'],
+    readTime: 8,
+  },
+];
+
 function fmtDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('es-CO', {
     year: 'numeric', month: 'long', day: 'numeric',
@@ -189,7 +214,7 @@ function fmtDate(dateStr: string): string {
 }
 
 export default function BlogPage() {
-  const posts = getAllPosts();
+  const posts = POSTS;
 
   return (
     <div className="bl-wrap">
