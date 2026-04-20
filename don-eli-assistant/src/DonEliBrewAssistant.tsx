@@ -146,8 +146,8 @@ const PRODUCTOS: Producto[] = [
 // Cambia ADSENSE_ACTIVO a true para activar los anuncios reales.
 // ══════════════════════════════════════════════════════════════
 
-const ADSENSE_ACTIVO    = false;               // ← cambiar a true cuando tengas aprobación
-const ADSENSE_CLIENT    = 'ca-pub-XXXXXXXXXX'; // ← tu Publisher ID aquí
+const ADSENSE_ACTIVO    = false;                      // ← cambiar a true cuando tengas aprobación
+const ADSENSE_CLIENT    = 'ca-pub-1250823916857519';  // ← tu Publisher ID aquí
 const ADSENSE_SLOT_TOP  = '0000000001';        // ← slot banner superior
 const ADSENSE_SLOT_MID  = '0000000002';        // ← slot cuadrado medio
 
