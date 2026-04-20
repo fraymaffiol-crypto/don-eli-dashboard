@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import catalogo from '@/data/catalogo.json';
 
@@ -105,6 +105,40 @@ const ESTILOS = `
     z-index: 1;
   }
   .cat-h-line { width: 42px; height: 2px; background: var(--oro); margin: .9rem auto 0; border-radius: 2px; position: relative; z-index: 1; }
+
+  /* ── BOLSA NY ── */
+  .cat-bolsa {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    margin-top: .9rem;
+    position: relative;
+    z-index: 1;
+  }
+  .cat-bolsa-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #4ade80;
+    flex-shrink: 0;
+    animation: catPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes catPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: .45; transform: scale(.75); }
+  }
+  .cat-bolsa-text {
+    font-size: .68rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    color: rgba(245,230,211,.5);
+  }
+  .cat-bolsa-precio {
+    font-size: .75rem;
+    font-weight: 700;
+    color: #C59D5F;
+    letter-spacing: .03em;
+  }
 
   /* ── TRM NOTA ── */
   .cat-trm {
@@ -335,8 +369,29 @@ const ESTILOS = `
   .cat-footer-link:hover { text-decoration: underline; }
 `;
 
+const INTERVALO_MS = 5 * 60 * 1000; // 5 minutos
+
+async function fetchBolsa(): Promise<string> {
+  try {
+    const res = await fetch('/api/coffee-price', { cache: 'no-store' });
+    if (!res.ok) return '--';
+    const data = await res.json();
+    if (data?.price == null) return '--';
+    return (data.price as number).toFixed(2);
+  } catch {
+    return '--';
+  }
+}
+
 export default function CatalogoPage() {
   const [filtro, setFiltro] = useState<Proceso>('Todos');
+  const [bolsa, setBolsa] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchBolsa().then(setBolsa);
+    const timer = setInterval(() => fetchBolsa().then(setBolsa), INTERVALO_MS);
+    return () => clearInterval(timer);
+  }, []);
 
   const filtrados = filtro === 'Todos'
     ? cafes
@@ -354,6 +409,16 @@ export default function CatalogoPage() {
         <h1 className="cat-h-title"><em>Catálogo</em> Don Elí</h1>
         <p className="cat-h-sub">Café de Especialidad Colombiano</p>
         <div className="cat-h-line" />
+        <div className="cat-bolsa">
+          <span className="cat-bolsa-dot" />
+          <span className="cat-bolsa-text">Bolsa NY:</span>
+          <span className="cat-bolsa-precio">
+            {bolsa === null ? '…' : bolsa === '--' ? '--' : `${bolsa} ¢/lb`}
+          </span>
+          {bolsa !== null && bolsa !== '--' && (
+            <span className="cat-bolsa-text">· En vivo</span>
+          )}
+        </div>
       </header>
 
       <div className="cat-main">
