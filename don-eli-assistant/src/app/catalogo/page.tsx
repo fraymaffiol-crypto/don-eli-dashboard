@@ -28,11 +28,8 @@ function fmtCOP(n: number) {
   return n.toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
 }
 
-function waLink(nombre: string) {
-  const msg = encodeURIComponent(
-    `Hola Don Elí 👋 Estoy interesado en el café *${nombre}*. ¿Está disponible? ¿Cómo puedo hacer mi pedido?`
-  );
-  return `https://wa.me/573013974951?text=${msg}`;
+function waLink(_nombre: string) {
+  return 'https://wa.link/spv1dd';
 }
 
 const ESTILOS = `
