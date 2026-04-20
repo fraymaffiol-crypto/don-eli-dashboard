@@ -88,7 +88,7 @@ const ESTILOS = `
   }
   .cat-h-title {
     font-family: 'Playfair Display', serif;
-    font-size: clamp(1.9rem, 7vw, 3rem);
+    font-size: clamp(2.5rem, 10vw, 4.5rem);
     font-weight: 700;
     color: var(--bg);
     line-height: 1.15;
@@ -97,7 +97,7 @@ const ESTILOS = `
   }
   .cat-h-title em { color: var(--oro); font-style: italic; }
   .cat-h-sub {
-    font-size: .78rem;
+    font-size: 1.1rem;
     font-weight: 300;
     color: rgba(245,230,211,.5);
     margin-top: .5rem;
@@ -128,13 +128,13 @@ const ESTILOS = `
     50%       { opacity: .45; transform: scale(.75); }
   }
   .cat-bolsa-text {
-    font-size: .68rem;
+    font-size: 1rem;
     font-weight: 600;
     letter-spacing: .06em;
     color: rgba(245,230,211,.5);
   }
   .cat-bolsa-precio {
-    font-size: .75rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: #C59D5F;
     letter-spacing: .03em;

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import BolsaNY from '@/components/BolsaNY';
 
 export const metadata: Metadata = {
   title: 'Blog · Don Elí Brew Assistant',
@@ -226,6 +227,9 @@ export default function BlogPage() {
         <h1 className="bl-h-title">El <em>Blog</em> del Café</h1>
         <p className="bl-h-sub">Mercado · Logística · Cultura cafetera de especialidad</p>
         <div className="bl-h-line" />
+        <div style={{ marginTop: '.9rem', position: 'relative', zIndex: 1 }}>
+          <BolsaNY />
+        </div>
       </header>
 
       <main className="bl-main">
