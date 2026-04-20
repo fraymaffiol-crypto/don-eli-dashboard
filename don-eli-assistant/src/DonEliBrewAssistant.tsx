@@ -1237,9 +1237,7 @@ const BlogHero: React.FC = () => (
         tendencias, origen, trazabilidad y mercado global.
       </p>
       <a
-        href="https://blog.donelicafe.com/"
-        target="_blank"
-        rel="noopener noreferrer"
+        href="/blog"
         className="dei-blog-cta"
       >
         Leer artículos →
