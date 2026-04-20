@@ -1,19 +1,18 @@
-'use client';/**
+'use client'
+
+/**
  * DonEliBrewAssistant.tsx
  * ─────────────────────────────────────────────────────────────
  * Calculadora de Extracción Don Elí — Brew Assistant
- * Componente React con TypeScript completo y auto-contenido.
+ * Incluye: AdSense listo para activar, sección ecommerce,
+ * tarjetas de productos, botón flotante y blog hero.
  *
- * Uso:
- *   import DonEliBrewAssistant from './DonEliBrewAssistant'
- *   <DonEliBrewAssistant />
- *
- * Requiere en index.html (o equivalente):
- *   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+ * Uso: import DonEliBrewAssistant from './DonEliBrewAssistant'
+ *      <DonEliBrewAssistant />
  * ─────────────────────────────────────────────────────────────
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // ══════════════════════════════════════════════════════════════
 // TIPOS
@@ -32,8 +31,19 @@ interface Metodo {
   nota: string;
 }
 
+interface Producto {
+  id: string;
+  emoji: string;
+  nombre: string;
+  descripcion: string;
+  precio: string;
+  categoria: string;
+  url: string;
+  badge?: string;
+}
+
 // ══════════════════════════════════════════════════════════════
-// DATOS
+// DATOS — MÉTODOS DE EXTRACCIÓN
 // ══════════════════════════════════════════════════════════════
 
 const METODOS: Metodo[] = [
@@ -82,7 +92,67 @@ const METODOS: Metodo[] = [
 const RATIO_OPCIONES: number[] = [13, 15, 16, 17, 18];
 
 // ══════════════════════════════════════════════════════════════
-// CSS GLOBAL (inyectado una sola vez via <style>)
+// DATOS — PRODUCTOS ECOMMERCE
+// Edita nombre, precio y url con los de tu tienda real
+// ══════════════════════════════════════════════════════════════
+
+const PRODUCTOS: Producto[] = [
+  {
+    id: 'cafe-origen',
+    emoji: '☕',
+    nombre: 'Café Origen Santander',
+    descripcion: 'Grano entero · Notas de chocolate y frutos secos · 250g',
+    precio: 'Ver precio',
+    categoria: 'Café',
+    url: 'https://donelicafe.com',
+    badge: '⭐ Más vendido',
+  },
+  {
+    id: 'v60-kit',
+    emoji: '🫗',
+    nombre: 'Kit V60 Completo',
+    descripcion: 'Cafetera V60 + 40 filtros + guía de extracción',
+    precio: 'Ver precio',
+    categoria: 'Equipos',
+    url: 'https://donelicafe.com',
+  },
+  {
+    id: 'chemex-kit',
+    emoji: '🧪',
+    nombre: 'Chemex 6 tazas',
+    descripcion: 'Vidrio borosilicato · Incluye filtros de madera',
+    precio: 'Ver precio',
+    categoria: 'Equipos',
+    url: 'https://donelicafe.com',
+  },
+  {
+    id: 'membresia',
+    emoji: '🎯',
+    nombre: 'Membresía Don Elí',
+    descripcion: 'Café fresco cada mes · Descuentos · Contenido exclusivo',
+    precio: 'Ver precio',
+    categoria: 'Suscripción',
+    url: 'https://donelicafe.com',
+    badge: '🔥 Nuevo',
+  },
+];
+
+// ══════════════════════════════════════════════════════════════
+// CONFIGURACIÓN ADSENSE
+// ─────────────────────────────────────────────────────────────
+// Cuando te aprueben AdSense, reemplaza:
+//   ADSENSE_CLIENT  → tu Publisher ID  (ej: "ca-pub-1234567890123456")
+//   ADSENSE_SLOT_*  → tus Ad Unit IDs  (ej: "9876543210")
+// Cambia ADSENSE_ACTIVO a true para activar los anuncios reales.
+// ══════════════════════════════════════════════════════════════
+
+const ADSENSE_ACTIVO    = false;               // ← cambiar a true cuando tengas aprobación
+const ADSENSE_CLIENT    = 'ca-pub-XXXXXXXXXX'; // ← tu Publisher ID aquí
+const ADSENSE_SLOT_TOP  = '0000000001';        // ← slot banner superior
+const ADSENSE_SLOT_MID  = '0000000002';        // ← slot cuadrado medio
+
+// ══════════════════════════════════════════════════════════════
+// CSS GLOBAL
 // ══════════════════════════════════════════════════════════════
 
 const ESTILOS_GLOBALES = `
@@ -311,22 +381,8 @@ const ESTILOS_GLOBALES = `
     background: radial-gradient(ellipse at center, rgba(197,157,95,.14) 0%, transparent 60%);
     pointer-events: none;
   }
-  .dei-res-lbl {
-    font-size: .68rem;
-    font-weight: 600;
-    letter-spacing: .2em;
-    text-transform: uppercase;
-    color: rgba(197,157,95,.75);
-    margin-bottom: .35rem;
-  }
-  .dei-res-num {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(3.2rem, 15vw, 5.2rem);
-    font-weight: 700;
-    color: var(--bg);
-    line-height: 1;
-    letter-spacing: -.02em;
-  }
+  .dei-res-lbl { font-size: .68rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(197,157,95,.75); margin-bottom: .35rem; }
+  .dei-res-num { font-family: 'Playfair Display', serif; font-size: clamp(3.2rem, 15vw, 5.2rem); font-weight: 700; color: var(--bg); line-height: 1; letter-spacing: -.02em; }
   .dei-res-u { font-size: 1.2rem; font-weight: 300; color: var(--oro); }
   .dei-res-row { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1rem; }
   .dei-ri { display: flex; flex-direction: column; align-items: center; gap: .12rem; }
@@ -358,49 +414,439 @@ const ESTILOS_GLOBALES = `
     font-style: italic;
   }
 
-  /* ── PUBLICIDAD ── */
-  .dei-pub-banner {
+  /* ── ADSENSE / PUBLICIDAD ── */
+  .dei-ad-wrap {
     border-radius: var(--r);
-    padding: 1rem 1.2rem;
-    background: linear-gradient(135deg, rgba(197,157,95,.08), rgba(75,44,32,.05));
-    border: 1.5px dashed rgba(197,157,95,.38);
-    text-align: center;
+    overflow: hidden;
+    min-height: 90px;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: .38rem;
-    min-height: 80px;
+    background: linear-gradient(135deg, rgba(197,157,95,.07), rgba(75,44,32,.04));
+    border: 1.5px dashed rgba(197,157,95,.3);
   }
-  .dei-pub-cuadrada {
-    border-radius: var(--r);
-    padding: 1.2rem;
-    background: linear-gradient(135deg, rgba(197,157,95,.08), rgba(75,44,32,.05));
-    border: 1.5px dashed rgba(197,157,95,.38);
-    text-align: center;
+  .dei-ad-wrap.cuadrado { min-height: 260px; }
+  .dei-ad-placeholder {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    gap: .35rem;
+    padding: 1rem;
+    text-align: center;
+  }
+  .dei-ad-ico { font-size: 1.4rem; opacity: .35; }
+  .dei-ad-lbl { font-size: .58rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: rgba(197,157,95,.55); }
+  .dei-ad-hint { font-size: .62rem; color: rgba(75,44,32,.28); font-weight: 300; }
+
+  /* ── ECOMMERCE — BANNER HERO ── */
+  .dei-shop-hero {
+    background: linear-gradient(135deg, var(--cafe) 0%, #6b3d2a 100%);
+    border-radius: var(--r);
+    padding: 1.6rem 1.2rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(75,44,32,.25);
+  }
+  .dei-shop-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -20%;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(197,157,95,.2) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .dei-shop-eyebrow {
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--oro);
+    margin-bottom: .45rem;
+    display: flex;
+    align-items: center;
     gap: .4rem;
-    min-height: 200px;
   }
-  .dei-pub-lbl { font-size: .6rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: rgba(197,157,95,.65); }
-  .dei-pub-sz  { font-size: .68rem; color: rgba(75,44,32,.32); font-weight: 300; }
+  .dei-shop-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 16px; height: 2px;
+    background: var(--oro);
+    border-radius: 2px;
+  }
+  .dei-shop-titulo {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    font-weight: 700;
+    color: var(--bg);
+    line-height: 1.2;
+    margin-bottom: .5rem;
+  }
+  .dei-shop-titulo em { color: var(--oro); font-style: italic; }
+  .dei-shop-desc {
+    font-size: .78rem;
+    color: rgba(245,230,211,.65);
+    font-weight: 300;
+    line-height: 1.5;
+    margin-bottom: 1.1rem;
+  }
+  .dei-shop-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--oro);
+    color: var(--cafe);
+    font-family: 'DM Sans', sans-serif;
+    font-size: .82rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    padding: .7rem 1.4rem;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: all .22s;
+    box-shadow: 0 4px 16px rgba(197,157,95,.35);
+  }
+  .dei-shop-btn:hover {
+    background: var(--bg);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(197,157,95,.45);
+  }
+
+  /* ── ECOMMERCE — TARJETAS DE PRODUCTOS ── */
+  .dei-prod-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .75rem;
+  }
+  .dei-prod-card {
+    background: var(--blanco);
+    border-radius: 14px;
+    padding: 1rem .9rem;
+    border: 1.5px solid rgba(197,157,95,.15);
+    box-shadow: 0 2px 12px rgba(75,44,32,.07);
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    position: relative;
+    transition: all .22s;
+    text-decoration: none;
+    color: inherit;
+  }
+  .dei-prod-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(75,44,32,.14);
+    border-color: var(--oro);
+  }
+  .dei-prod-badge {
+    position: absolute;
+    top: .6rem; right: .6rem;
+    font-size: .55rem;
+    font-weight: 700;
+    background: var(--oro);
+    color: var(--cafe);
+    padding: .18rem .5rem;
+    border-radius: 50px;
+    letter-spacing: .04em;
+  }
+  .dei-prod-ico { font-size: 1.8rem; line-height: 1; margin-bottom: .15rem; }
+  .dei-prod-cat {
+    font-size: .58rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--oro);
+  }
+  .dei-prod-nom {
+    font-family: 'Playfair Display', serif;
+    font-size: .88rem;
+    font-weight: 600;
+    color: var(--cafe);
+    line-height: 1.3;
+  }
+  .dei-prod-desc {
+    font-size: .68rem;
+    color: var(--gris);
+    opacity: .75;
+    line-height: 1.4;
+    flex: 1;
+  }
+  .dei-prod-cta {
+    margin-top: .4rem;
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--oro);
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+  }
+
+  /* ── TARJETA RECETA COMPARTIBLE ── */
+  .dei-receta-wrap { display: flex; flex-direction: column; gap: .9rem; }
+  .dei-receta-card {
+    background: var(--cafe);
+    border-radius: var(--r);
+    padding: 1.5rem 1.2rem;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(197,157,95,.2);
+  }
+  .dei-receta-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 10% 90%, rgba(197,157,95,.12) 0%, transparent 55%),
+      radial-gradient(ellipse at 90% 10%, rgba(197,157,95,.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .dei-receta-card::after {
+    content: '';
+    position: absolute;
+    top: 10px; left: 10px; right: 10px; bottom: 10px;
+    border: 1px solid rgba(197,157,95,.12);
+    border-radius: 10px;
+    pointer-events: none;
+  }
+  .dei-receta-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; position: relative; }
+  .dei-receta-marca { display: flex; flex-direction: column; gap: .15rem; }
+  .dei-receta-logo { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; color: var(--oro); }
+  .dei-receta-sub { font-size: .56rem; font-weight: 400; color: rgba(245,230,211,.4); letter-spacing: .12em; text-transform: uppercase; }
+  .dei-receta-metodo-badge {
+    display: flex; flex-direction: column; align-items: center; gap: .15rem;
+    background: rgba(197,157,95,.12);
+    border: 1px solid rgba(197,157,95,.25);
+    border-radius: 10px;
+    padding: .5rem .75rem;
+  }
+  .dei-receta-metodo-ico { font-size: 1.4rem; line-height: 1; }
+  .dei-receta-metodo-nom { font-size: .58rem; font-weight: 700; color: var(--oro); letter-spacing: .08em; text-transform: uppercase; }
+  .dei-receta-nums { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .6rem; margin-bottom: 1rem; position: relative; }
+  .dei-receta-num-item {
+    background: rgba(245,230,211,.06);
+    border-radius: 10px; padding: .7rem .4rem; text-align: center;
+    border: 1px solid rgba(197,157,95,.12);
+  }
+  .dei-receta-num-val { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--bg); line-height: 1; display: block; }
+  .dei-receta-num-val.grande { font-size: 1.8rem; color: var(--oro); }
+  .dei-receta-num-lbl { font-size: .53rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(245,230,211,.4); margin-top: .2rem; display: block; }
+  .dei-receta-guia { display: flex; justify-content: space-between; padding-top: .8rem; border-top: 1px solid rgba(197,157,95,.12); position: relative; }
+  .dei-receta-guia-item { display: flex; flex-direction: column; align-items: center; gap: .15rem; }
+  .dei-receta-guia-ico { font-size: .95rem; }
+  .dei-receta-guia-val { font-size: .68rem; font-weight: 600; color: var(--bg); font-family: 'Playfair Display', serif; }
+  .dei-receta-guia-lbl { font-size: .5rem; color: rgba(245,230,211,.38); text-transform: uppercase; letter-spacing: .08em; font-weight: 500; }
+  .dei-receta-url { font-size: .56rem; color: rgba(197,157,95,.45); text-align: center; margin-top: .85rem; letter-spacing: .06em; position: relative; }
+
+  /* ── COMUNIDAD ── */
+  .dei-comunidad {
+    background: linear-gradient(135deg, #1a472a 0%, #25D366 100%);
+    border-radius: var(--r);
+    padding: 1.5rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .75rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 6px 24px rgba(37,211,102,.25);
+  }
+  .dei-comunidad::before {
+    content: '';
+    position: absolute;
+    top: -40%; right: -20%;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.06);
+    pointer-events: none;
+  }
+  .dei-comunidad-ico {
+    font-size: 2.2rem;
+    line-height: 1;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,.2));
+  }
+  .dei-comunidad-eyebrow {
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.6);
+  }
+  .dei-comunidad-titulo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.25;
+  }
+  .dei-comunidad-titulo em {
+    font-style: italic;
+    color: #dcf8c6;
+  }
+  .dei-comunidad-desc {
+    font-size: .76rem;
+    color: rgba(255,255,255,.75);
+    font-weight: 300;
+    line-height: 1.5;
+    max-width: 320px;
+  }
+  .dei-comunidad-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    background: #fff;
+    color: #1a472a;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .85rem;
+    font-weight: 700;
+    padding: .75rem 1.6rem;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: all .22s;
+    box-shadow: 0 4px 16px rgba(0,0,0,.15);
+    margin-top: .2rem;
+  }
+  .dei-comunidad-btn:hover {
+    background: #dcf8c6;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(0,0,0,.2);
+  }
+  .dei-comunidad-miembros {
+    font-size: .62rem;
+    color: rgba(255,255,255,.5);
+    letter-spacing: .04em;
+  }
+
+  /* ── BLOG HERO ── */
+  .dei-blog-hero {
+    background: var(--cafe);
+    padding: 2.2rem 1.2rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .dei-blog-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 80% 50%, rgba(197,157,95,.18) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .dei-blog-inner { max-width: 600px; margin: 0 auto; position: relative; }
+  .dei-blog-eyebrow {
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--oro);
+    margin-bottom: .5rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+  .dei-blog-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 20px; height: 2px;
+    background: var(--oro);
+    border-radius: 2px;
+  }
+  .dei-blog-titulo {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 6vw, 2.4rem);
+    font-weight: 700;
+    color: var(--bg);
+    line-height: 1.2;
+    margin-bottom: .6rem;
+  }
+  .dei-blog-titulo em { color: var(--oro); font-style: italic; }
+  .dei-blog-desc { font-size: .82rem; color: rgba(245,230,211,.6); font-weight: 300; line-height: 1.5; margin-bottom: 1.1rem; }
+  .dei-blog-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--oro);
+    color: var(--cafe);
+    font-family: 'DM Sans', sans-serif;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    padding: .65rem 1.3rem;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: all .22s;
+  }
+  .dei-blog-cta:hover { background: var(--bg); transform: translateX(3px); }
+  .dei-blog-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .9rem; }
+  .dei-blog-tag {
+    font-size: .62rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: rgba(197,157,95,.7);
+    border: 1px solid rgba(197,157,95,.25);
+    padding: .22rem .65rem;
+    border-radius: 50px;
+  }
 
   /* ── FOOTER ── */
-  .dei-footer {
-    background: var(--cafe);
-    color: var(--bg);
-    padding: 2rem 1.2rem;
-    margin-top: .5rem;
-  }
+  .dei-footer { background: #3a2118; color: var(--bg); padding: 2rem 1.2rem 1.5rem; }
   .dei-fi { max-width: 600px; margin: 0 auto; }
-  .dei-ft { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 600; color: var(--oro); margin-bottom: .7rem; }
-  .dei-fp { font-size: .82rem; line-height: 1.72; color: rgba(245,230,211,.75); margin-bottom: .8rem; }
+  .dei-ft { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; color: var(--oro); margin-bottom: .6rem; }
+  .dei-fp { font-size: .79rem; line-height: 1.72; color: rgba(245,230,211,.65); margin-bottom: .75rem; }
   .dei-fp strong { color: var(--oro); font-weight: 600; }
-  .dei-fdiv { width: 100%; height: 1px; background: rgba(197,157,95,.18); margin: 1rem 0; }
-  .dei-fcp { font-size: .67rem; color: rgba(245,230,211,.32); text-align: center; letter-spacing: .07em; }
+  .dei-fdiv { width: 100%; height: 1px; background: rgba(197,157,95,.15); margin: 1rem 0; }
+  .dei-fcp { font-size: .65rem; color: rgba(245,230,211,.28); text-align: center; letter-spacing: .07em; }
+
+  /* ── BOTÓN FLOTANTE ── */
+  .dei-fab {
+    position: fixed;
+    bottom: 1.4rem;
+    right: 1.2rem;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--cafe);
+    color: var(--oro);
+    font-family: 'DM Sans', sans-serif;
+    font-size: .78rem;
+    font-weight: 700;
+    padding: .7rem 1.1rem;
+    border-radius: 50px;
+    text-decoration: none;
+    box-shadow: 0 6px 24px rgba(75,44,32,.4);
+    border: 1.5px solid rgba(197,157,95,.35);
+    transition: all .22s;
+    animation: fabPop .5s 1s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes fabPop {
+    from { opacity:0; transform: scale(.6) translateY(20px); }
+    to   { opacity:1; transform: scale(1) translateY(0); }
+  }
+  .dei-fab:hover {
+    background: var(--oro);
+    color: var(--cafe);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(197,157,95,.45);
+  }
+  .dei-fab-ico { font-size: 1rem; }
+  .dei-fab-txt { white-space: nowrap; }
+
+  /* ── SEPARADOR DE SECCIÓN ── */
+  .dei-section-sep {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 0 .25rem;
+  }
+  .dei-section-sep-line { flex: 1; height: 1px; background: rgba(197,157,95,.25); }
+  .dei-section-sep-lbl {
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: rgba(197,157,95,.6);
+    white-space: nowrap;
+  }
 
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
@@ -411,30 +857,63 @@ const ESTILOS_GLOBALES = `
 // SUB-COMPONENTES
 // ══════════════════════════════════════════════════════════════
 
-/** Placeholder elegante para anuncio horizontal (320×80) */
-interface PublicidadBannerProps {
-  slot?: string;
+/**
+ * AdSense / Publicidad
+ * Muestra el anuncio real cuando ADSENSE_ACTIVO=true,
+ * o un placeholder elegante cuando aún no está aprobado.
+ */
+interface AdSlotProps {
+  slot: string;
+  cuadrado?: boolean;
 }
-const PublicidadBanner: React.FC<PublicidadBannerProps> = ({ slot = 'banner-top' }) => (
-  <div className="dei-pub-banner" aria-label="Espacio publicitario">
-    <span style={{ fontSize: '1.4rem', opacity: 0.4 }}>📢</span>
-    <span className="dei-pub-lbl">Publicidad</span>
-    <span className="dei-pub-sz">Anuncio 320×80 · Slot: {slot}</span>
-  </div>
-);
+const AdSlot: React.FC<AdSlotProps> = ({ slot, cuadrado = false }) => {
+  useEffect(() => {
+    if (ADSENSE_ACTIVO) {
+      try {
+        // Empuja el anuncio a AdSense cuando el componente monta
+        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+      } catch {}
+    }
+  }, []);
 
-/** Placeholder elegante para anuncio cuadrado (300×250) */
-interface PublicidadCuadradaProps {
-  slot?: string;
-}
-const PublicidadCuadrada: React.FC<PublicidadCuadradaProps> = ({ slot = 'square-mid' }) => (
-  <div className="dei-pub-cuadrada" aria-label="Espacio publicitario cuadrado">
-    <span style={{ fontSize: '2rem', opacity: 0.35 }}>☕</span>
-    <span className="dei-pub-lbl">Publicidad</span>
-    <span className="dei-pub-sz">Anuncio 300×250 · Slot: {slot}</span>
-    <span style={{ fontSize: '.63rem', color: 'rgba(75,44,32,.28)', marginTop: '.2rem' }}>
-      Google AdSense · Amazon Ads · Publicidad Directa
-    </span>
+  if (ADSENSE_ACTIVO) {
+    return (
+      <div className={`dei-ad-wrap${cuadrado ? ' cuadrado' : ''}`}>
+        <ins
+          className="adsbygoogle"
+          style={{ display: 'block', width: '100%', minHeight: cuadrado ? '250px' : '90px' }}
+          data-ad-client={ADSENSE_CLIENT}
+          data-ad-slot={slot}
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        />
+      </div>
+    );
+  }
+
+  // Placeholder mientras AdSense no está aprobado
+  return (
+    <div className={`dei-ad-wrap${cuadrado ? ' cuadrado' : ''}`} aria-label="Espacio publicitario">
+      <div className="dei-ad-placeholder">
+        <span className="dei-ad-ico">📢</span>
+        <span className="dei-ad-lbl">Publicidad</span>
+        <span className="dei-ad-hint">
+          {cuadrado ? 'Anuncio 300×250' : 'Anuncio 320×90'} · Slot: {slot}
+        </span>
+        <span className="dei-ad-hint" style={{ marginTop: '.25rem', fontSize: '.58rem' }}>
+          Activa AdSense cambiando ADSENSE_ACTIVO = true
+        </span>
+      </div>
+    </div>
+  );
+};
+
+/** Separador de sección con etiqueta */
+const SepSeccion: React.FC<{ label: string }> = ({ label }) => (
+  <div className="dei-section-sep">
+    <div className="dei-section-sep-line" />
+    <span className="dei-section-sep-lbl">{label}</span>
+    <div className="dei-section-sep-line" />
   </div>
 );
 
@@ -480,7 +959,7 @@ const Calculadora: React.FC<CalculadoraProps> = ({ gramos, setGramos, ratio, set
       Parámetros de Extracción
     </div>
 
-    {/* ── Gramos ── */}
+    {/* Gramos */}
     <div className="dei-ig">
       <div className="dei-ilabel">
         <span className="dei-ilabel-txt">Gramos de Café</span>
@@ -490,25 +969,19 @@ const Calculadora: React.FC<CalculadoraProps> = ({ gramos, setGramos, ratio, set
       </div>
       <input
         className="dei-range"
-        type="range"
-        min={8}
-        max={60}
-        step={1}
-        value={gramos}
+        type="range" min={8} max={60} step={1} value={gramos}
         onChange={(e) => setGramos(Number(e.target.value))}
         aria-label="Gramos de café"
       />
       <div className="dei-s-hints"><span>8 g</span><span>60 g</span></div>
     </div>
 
-    {/* ── Ratio ── */}
+    {/* Ratio */}
     <div className="dei-ig">
       <div className="dei-ilabel">
         <span className="dei-ilabel-txt">Ratio Café : Agua</span>
         <span className="dei-ilabel-val">1:{ratio}</span>
       </div>
-
-      {/* Pills de acceso rápido */}
       <div className="dei-rpills">
         {RATIO_OPCIONES.map((r) => (
           <button
@@ -520,66 +993,49 @@ const Calculadora: React.FC<CalculadoraProps> = ({ gramos, setGramos, ratio, set
           </button>
         ))}
       </div>
-
       <div style={{ marginTop: '.75rem' }}>
         <input
           className="dei-range"
-          type="range"
-          min={10}
-          max={20}
-          step={1}
-          value={ratio}
+          type="range" min={10} max={20} step={1} value={ratio}
           onChange={(e) => setRatio(Number(e.target.value))}
           aria-label="Ratio de extracción"
         />
-        <div className="dei-s-hints">
-          <span>Intenso 1:10</span>
-          <span>Suave 1:20</span>
-        </div>
+        <div className="dei-s-hints"><span>Intenso 1:10</span><span>Suave 1:20</span></div>
       </div>
     </div>
   </div>
 );
 
-/** Tarjeta de resultado principal */
-interface ResultadoProps {
-  gramos: number;
-  ratio: number;
-}
-const Resultado: React.FC<ResultadoProps> = ({ gramos, ratio }) => {
-  const aguaTotal = gramos * ratio;
-  const tazas = (gramos / 7).toFixed(1);
-  return (
-    <div className="dei-res-card">
-      <p className="dei-res-lbl">Agua Total Necesaria</p>
-      <div>
-        <span className="dei-res-num">{aguaTotal}</span>
-        <span className="dei-res-u"> ml</span>
+/** Resultado principal */
+interface ResultadoProps { gramos: number; ratio: number; }
+const Resultado: React.FC<ResultadoProps> = ({ gramos, ratio }) => (
+  <div className="dei-res-card">
+    <p className="dei-res-lbl">Agua Total Necesaria</p>
+    <div>
+      <span className="dei-res-num">{gramos * ratio}</span>
+      <span className="dei-res-u"> ml</span>
+    </div>
+    <div className="dei-res-row">
+      <div className="dei-ri">
+        <span className="dei-ri-v">{gramos}g</span>
+        <span className="dei-ri-l">Café</span>
       </div>
-      <div className="dei-res-row">
-        <div className="dei-ri">
-          <span className="dei-ri-v">{gramos}g</span>
-          <span className="dei-ri-l">Café</span>
-        </div>
-        <div className="dei-rsep" />
-        <div className="dei-ri">
-          <span className="dei-ri-v">1:{ratio}</span>
-          <span className="dei-ri-l">Ratio</span>
-        </div>
-        <div className="dei-rsep" />
-        <div className="dei-ri">
-          <span className="dei-ri-v">{tazas}</span>
-          <span className="dei-ri-l">Tazas est.</span>
-        </div>
+      <div className="dei-rsep" />
+      <div className="dei-ri">
+        <span className="dei-ri-v">1:{ratio}</span>
+        <span className="dei-ri-l">Ratio</span>
+      </div>
+      <div className="dei-rsep" />
+      <div className="dei-ri">
+        <span className="dei-ri-v">{(gramos / 7).toFixed(1)}</span>
+        <span className="dei-ri-l">Tazas est.</span>
       </div>
     </div>
-  );
-};
+  </div>
+);
 
-/** Guía técnica dinámica según método */
-interface GuiaTecnicaProps {
-  metodoId: MetodoId;
-}
+/** Guía técnica dinámica */
+interface GuiaTecnicaProps { metodoId: MetodoId; }
 const GuiaTecnica: React.FC<GuiaTecnicaProps> = ({ metodoId }) => {
   const m = METODOS.find((x) => x.id === metodoId)!;
   return (
@@ -610,7 +1066,194 @@ const GuiaTecnica: React.FC<GuiaTecnicaProps> = ({ metodoId }) => {
   );
 };
 
-/** Footer informativo SEO */
+/**
+ * Sección Ecommerce — Banner hero de la tienda
+ */
+const ShopHero: React.FC = () => (
+  <div className="dei-shop-hero">
+    <p className="dei-shop-eyebrow">Tienda Don Elí</p>
+    <h2 className="dei-shop-titulo">
+      El mejor café,<br /><em>directo a tu taza</em>
+    </h2>
+    <p className="dei-shop-desc">
+      Café de origen santandereano, equipos de especialidad y membresías
+      para los que se toman el café en serio.
+    </p>
+    <a
+      href="https://donelicafe.com"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="dei-shop-btn"
+    >
+      🛒 Ir a la tienda →
+    </a>
+  </div>
+);
+
+/**
+ * Tarjetas de productos destacados
+ * Edita el array PRODUCTOS arriba con tus productos reales
+ */
+const TarjetasProductos: React.FC = () => (
+  <div className="dei-prod-grid">
+    {PRODUCTOS.map((p) => (
+      <a
+        key={p.id}
+        href={p.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="dei-prod-card"
+      >
+        {p.badge && <span className="dei-prod-badge">{p.badge}</span>}
+        <span className="dei-prod-ico">{p.emoji}</span>
+        <span className="dei-prod-cat">{p.categoria}</span>
+        <span className="dei-prod-nom">{p.nombre}</span>
+        <span className="dei-prod-desc">{p.descripcion}</span>
+        <span className="dei-prod-cta">Ver producto →</span>
+      </a>
+    ))}
+  </div>
+);
+
+/**
+ * TarjetaReceta — genera una tarjeta visual con la receta del usuario
+ * y permite compartirla por WhatsApp e Instagram Stories
+ */
+interface TarjetaRecetaProps {
+  gramos: number;
+  ratio: number;
+  metodoId: MetodoId;
+}
+const TarjetaReceta: React.FC<TarjetaRecetaProps> = ({ gramos, ratio, metodoId }) => {
+  const m = METODOS.find((x) => x.id === metodoId)!;
+  const agua = gramos * ratio;
+  const tazas = (gramos / 7).toFixed(1);
+
+  return (
+    <div className="dei-receta-wrap">
+
+      {/* Título de sección */}
+      <div className="dei-ctitle" style={{ marginBottom: 0 }}>
+        <span className="dei-cico">📸</span>
+        Tu Receta — Compártela
+      </div>
+
+      {/* Tarjeta visual de la receta */}
+      <div className="dei-receta-card" id="receta-card">
+        {/* Header: marca + método */}
+        <div className="dei-receta-header">
+          <div className="dei-receta-marca">
+            <span className="dei-receta-logo">Don Elí ☕</span>
+            <span className="dei-receta-sub">Brew Assistant · Calculadora</span>
+          </div>
+          <div className="dei-receta-metodo-badge">
+            <span className="dei-receta-metodo-ico">{m.icono}</span>
+            <span className="dei-receta-metodo-nom">{m.nombre}</span>
+          </div>
+        </div>
+
+        {/* Números principales */}
+        <div className="dei-receta-nums">
+          <div className="dei-receta-num-item">
+            <span className="dei-receta-num-val">{gramos}</span>
+            <span className="dei-receta-num-lbl">Gramos</span>
+          </div>
+          <div className="dei-receta-num-item">
+            <span className="dei-receta-num-val grande">{agua}</span>
+            <span className="dei-receta-num-lbl">ml Agua</span>
+          </div>
+          <div className="dei-receta-num-item">
+            <span className="dei-receta-num-val">1:{ratio}</span>
+            <span className="dei-receta-num-lbl">Ratio</span>
+          </div>
+        </div>
+
+        {/* Guía técnica compacta */}
+        <div className="dei-receta-guia">
+          <div className="dei-receta-guia-item">
+            <span className="dei-receta-guia-ico">🌀</span>
+            <span className="dei-receta-guia-val">{m.molienda}</span>
+            <span className="dei-receta-guia-lbl">Molienda</span>
+          </div>
+          <div className="dei-receta-guia-item">
+            <span className="dei-receta-guia-ico">🌡️</span>
+            <span className="dei-receta-guia-val">{m.temperatura}</span>
+            <span className="dei-receta-guia-lbl">Temp.</span>
+          </div>
+          <div className="dei-receta-guia-item">
+            <span className="dei-receta-guia-ico">⏱️</span>
+            <span className="dei-receta-guia-val">{m.tiempo}</span>
+            <span className="dei-receta-guia-lbl">Tiempo</span>
+          </div>
+          <div className="dei-receta-guia-item">
+            <span className="dei-receta-guia-ico">☕</span>
+            <span className="dei-receta-guia-val">{tazas}</span>
+            <span className="dei-receta-guia-lbl">Tazas</span>
+          </div>
+        </div>
+
+        {/* URL de marca */}
+        <p className="dei-receta-url">blog.donelicafe.com · #DonEliCafe #CafeEspecialidad</p>
+      </div>
+
+      {/* Botones de compartir → COMUNIDAD */}
+      <div className="dei-comunidad">
+        <span className="dei-comunidad-ico">☕</span>
+        <span className="dei-comunidad-eyebrow">Comunidad Don Elí</span>
+        <h3 className="dei-comunidad-titulo">
+          <em>Locos x el Café</em><br />by Don Elí Café
+        </h3>
+        <p className="dei-comunidad-desc">
+          Únete a nuestra comunidad de amantes del café de especialidad.
+          Comparte recetas, aprende técnicas y conecta con otros baristas.
+        </p>
+        <a
+          href="https://chat.whatsapp.com/Ji6H8cq1VWq25iamcmquEN?mode=gi_t"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="dei-comunidad-btn"
+        >
+          💬 Unirme al grupo
+        </a>
+        <span className="dei-comunidad-miembros">
+          Grupo de WhatsApp · Café de Especialidad · Santander 🇨🇴
+        </span>
+      </div>
+
+    </div>
+  );
+};
+
+/** Bloque del Blog */
+const BlogHero: React.FC = () => (
+  <div className="dei-blog-hero">
+    <div className="dei-blog-inner">
+      <p className="dei-blog-eyebrow">El Blog del Café</p>
+      <h2 className="dei-blog-titulo">
+        Mercado · <em>Logística</em><br />Geopolítica
+      </h2>
+      <p className="dei-blog-desc">
+        Análisis profundo del mundo del café de especialidad:<br />
+        tendencias, origen, trazabilidad y mercado global.
+      </p>
+      <a
+        href="https://blog.donelicafe.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="dei-blog-cta"
+      >
+        Leer artículos →
+      </a>
+      <div className="dei-blog-tags">
+        {['Especialidad', 'Origen', 'Precios', 'Barismo', 'Colombia'].map((tag) => (
+          <span key={tag} className="dei-blog-tag">{tag}</span>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+/** Footer SEO */
 const FooterInfo: React.FC = () => (
   <footer className="dei-footer">
     <div className="dei-fi">
@@ -625,15 +1268,13 @@ const FooterInfo: React.FC = () => (
         el perfil del café. Más agua = más suave y frutal. Menos agua = más intenso y achocolatado.
       </p>
       <div className="dei-fdiv" />
-      <h3 className="dei-ft" style={{ fontSize: '1rem', marginBottom: '.5rem' }}>
-        Tradición Cafetera de Santander 🇨🇴
-      </h3>
+      <h3 className="dei-ft">Tradición Cafetera de Santander 🇨🇴</h3>
       <p className="dei-fp">
         Santander es una de las regiones cafeteras más antiguas de Colombia. Sus cafés, cultivados
         entre los <strong>1.200 y 1.800 m.s.n.m.</strong> en las laderas de la cordillera Oriental,
         se distinguen por notas de <strong>chocolate amargo, frutos secos y caña</strong> con acidez
-        suave. La tradición santandereana fusiona métodos artesanales con las exigencias del café de
-        especialidad internacional.
+        suave. La tradición santandereana fusiona métodos artesanales con las exigencias del café
+        de especialidad internacional.
       </p>
       <p className="dei-fp">
         <strong>Don Elí Brew Assistant</strong> nació de esa pasión: llevar el conocimiento técnico
@@ -647,63 +1288,92 @@ const FooterInfo: React.FC = () => (
   </footer>
 );
 
+/**
+ * Botón flotante fijo — siempre visible
+ * Lleva directo a donelicafe.com desde cualquier parte de la página
+ */
+const BotonFlotante: React.FC = () => (
+  <a
+    href="https://donelicafe.com"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="dei-fab"
+    aria-label="Ir a la tienda Don Elí"
+  >
+    <span className="dei-fab-ico">🛒</span>
+    <span className="dei-fab-txt">Tienda Don Elí</span>
+  </a>
+);
+
 // ══════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
 // ══════════════════════════════════════════════════════════════
 
 const DonEliBrewAssistant: React.FC = () => {
-  // Estado de la calculadora
   const [metodo, setMetodo] = useState<MetodoId>('v60');
   const [gramos, setGramos] = useState<number>(18);
-  const [ratio, setRatio]   = useState<number>(15);
+  const [ratio,  setRatio]  = useState<number>(15);
 
   return (
     <>
-      {/* CSS global inyectado como <style> (evita dependencia de un .css externo) */}
+      {/* CSS global auto-contenido */}
       <style>{ESTILOS_GLOBALES}</style>
 
       {/* ── HEADER ── */}
       <header className="dei-header">
         <p className="dei-h-eye">☕ Santander · Colombia</p>
-        <h1 className="dei-h-title">
-          Don Elí: <em>Brew</em> Assistant
-        </h1>
-        <p className="dei-h-sub">
-          Calculadora profesional de extracción para café de especialidad
-        </p>
+        <h1 className="dei-h-title">Don Elí: <em>Brew</em> Assistant</h1>
+        <p className="dei-h-sub">Calculadora profesional de extracción para café de especialidad</p>
         <div className="dei-h-line" />
       </header>
 
       {/* ── CONTENIDO PRINCIPAL ── */}
       <main className="dei-main">
 
-        {/* Publicidad banner superior */}
-        <PublicidadBanner slot="banner-top" />
+        {/* Anuncio superior */}
+        <AdSlot slot={ADSENSE_SLOT_TOP} />
 
         {/* 1. Selector de métodos */}
         <SelectorMetodos metodoActivo={metodo} onChange={setMetodo} />
 
-        {/* 2. Controles de gramos y ratio */}
-        <Calculadora
-          gramos={gramos}
-          setGramos={setGramos}
-          ratio={ratio}
-          setRatio={setRatio}
-        />
+        {/* 2. Parámetros */}
+        <Calculadora gramos={gramos} setGramos={setGramos} ratio={ratio} setRatio={setRatio} />
 
-        {/* 3. Resultado de agua total */}
+        {/* 3. Resultado */}
         <Resultado gramos={gramos} ratio={ratio} />
 
-        {/* 4. Guía técnica dinámica */}
+        {/* 4. Guía técnica */}
         <GuiaTecnica metodoId={metodo} />
 
-        {/* Publicidad cuadrada */}
-        <PublicidadCuadrada slot="square-mid" />
+        {/* 5. Tarjeta de receta compartible */}
+        <SepSeccion label="Comparte tu receta" />
+        <div className="dei-card">
+          <TarjetaReceta gramos={gramos} ratio={ratio} metodoId={metodo} />
+        </div>
+
+        {/* Separador + Anuncio cuadrado */}
+        <SepSeccion label="Patrocinado" />
+        <AdSlot slot={ADSENSE_SLOT_MID} cuadrado />
+
+        {/* ── ECOMMERCE ── */}
+        <SepSeccion label="Nuestra Tienda" />
+
+        {/* Banner hero de la tienda */}
+        <ShopHero />
+
+        {/* Tarjetas de productos */}
+        <TarjetasProductos />
 
       </main>
 
+      {/* ── BLOG DESTACADO ── */}
+      <BlogHero />
+
       {/* ── FOOTER SEO ── */}
       <FooterInfo />
+
+      {/* ── BOTÓN FLOTANTE (siempre visible) ── */}
+      <BotonFlotante />
     </>
   );
 };
