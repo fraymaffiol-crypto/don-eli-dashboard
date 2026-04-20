@@ -242,21 +242,21 @@ const ESTILOS_GLOBALES = `
     50%       { opacity: .45; transform: scale(.75); }
   }
   .dei-bolsa-label {
-    font-size: .78rem;
+    font-size: 1rem;
     font-weight: 600;
     letter-spacing: .06em;
     color: rgba(245,230,211,.5);
   }
   .dei-bolsa-precio {
-    font-size: .9rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: #C59D5F;
     letter-spacing: .03em;
   }
   .dei-bolsa-vivo {
-    font-size: .65rem;
+    font-size: .72rem;
     font-weight: 600;
-    color: rgba(245,230,211,.35);
+    color: rgba(245,230,211,.4);
     letter-spacing: .05em;
   }
 
