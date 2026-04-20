@@ -222,6 +222,43 @@ const ESTILOS_GLOBALES = `
     margin: .9rem auto 0;
     border-radius: 2px;
   }
+  .dei-bolsa {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    margin-top: .75rem;
+    position: relative;
+    z-index: 1;
+  }
+  .dei-bolsa-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #4ade80;
+    flex-shrink: 0;
+    animation: deiBolsaPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes deiBolsaPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: .45; transform: scale(.75); }
+  }
+  .dei-bolsa-label {
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    color: rgba(245,230,211,.5);
+  }
+  .dei-bolsa-precio {
+    font-size: .9rem;
+    font-weight: 700;
+    color: #C59D5F;
+    letter-spacing: .03em;
+  }
+  .dei-bolsa-vivo {
+    font-size: .65rem;
+    font-weight: 600;
+    color: rgba(245,230,211,.35);
+    letter-spacing: .05em;
+  }
 
   /* ── MAIN ── */
   .dei-main {
@@ -1307,10 +1344,29 @@ const BotonFlotante: React.FC = () => (
 // COMPONENTE PRINCIPAL
 // ══════════════════════════════════════════════════════════════
 
+async function fetchBolsaNY(): Promise<string> {
+  try {
+    const res = await fetch('/api/coffee-price', { cache: 'no-store' });
+    if (!res.ok) return '--';
+    const data = await res.json();
+    if (data?.price == null) return '--';
+    return (data.price as number).toFixed(2);
+  } catch {
+    return '--';
+  }
+}
+
 const DonEliBrewAssistant: React.FC = () => {
   const [metodo, setMetodo] = useState<MetodoId>('v60');
   const [gramos, setGramos] = useState<number>(18);
   const [ratio,  setRatio]  = useState<number>(15);
+  const [bolsa,  setBolsa]  = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchBolsaNY().then(setBolsa);
+    const timer = setInterval(() => fetchBolsaNY().then(setBolsa), 5 * 60 * 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <>
@@ -1322,6 +1378,18 @@ const DonEliBrewAssistant: React.FC = () => {
         <p className="dei-h-eye">☕ Santander · Colombia</p>
         <h1 className="dei-h-title">Don Elí: <em>Brew</em> Assistant</h1>
         <p className="dei-h-sub">Calculadora profesional de extracción para café de especialidad</p>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <div className="dei-bolsa">
+            <span className="dei-bolsa-dot" />
+            <span className="dei-bolsa-label">Bolsa NY:</span>
+            <span className="dei-bolsa-precio">
+              {bolsa === null ? '…' : bolsa === '--' ? '--' : `${bolsa} ¢/lb`}
+            </span>
+            {bolsa !== null && bolsa !== '--' && (
+              <span className="dei-bolsa-vivo">· En vivo</span>
+            )}
+          </div>
+        </div>
         <div className="dei-h-line" />
       </header>
 
